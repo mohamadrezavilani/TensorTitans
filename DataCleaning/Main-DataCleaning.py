@@ -1,6 +1,7 @@
 import os
 import pandas as pd
-from DataCleaningFunctions-Persian import 
+from DataCleaning.DataCleaningFunctions_Persian import PersianTextPreprocessor
+from DataCleaning.DataCleaningFunctions_English import EnglishTextPreprocessor
 
 # Define the directory containing the data files
 directory_path = "DataSource"
