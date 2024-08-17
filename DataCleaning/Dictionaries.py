@@ -182,17 +182,16 @@ sign_dict_en = {
     '"': '"',  # Replace straight double quotes with consistent quotes (adjust based on context)
     '“': '"',  # Replace left double quotation marks with straight double quotes
     '”': '"',  # Replace right double quotation marks with straight double quotes
-    "'": '"',  # Replace single quotes with Persian-style single quotation marks
     '‘': '"',  # Replace left single quotation mark with straight double quote
     '’': '"',  # Replace right single quotation mark with straight double quote
     '""': '"',
     '-': ' - ',  # Replace hyphen with an em dash for proper punctuation
     '—': ' — ',  # Replace hyphen with an em dash for proper punctuation
     '_': ' ',  # Replace underscores with a space
+    '%': ' percent ',  # Replace percentage sign with the Persian percentage sign
     '@': '',  # Remove unwanted character '@'
     '#': '',  # Remove unwanted character '#'
     '$': '',  # Remove unwanted character '$'
-    '%': '٪',  # Replace percentage sign with the Persian percentage sign
     '^': '',  # Remove unwanted character '^'
     '&': '',  # Remove unwanted character '&'
     '*': '',  # Remove unwanted character '*'
@@ -234,8 +233,6 @@ sign_dict_en = {
     '×': ' ',  # Remove multiplication sign
     '《': ' ',  # Remove left double angle quotation mark in CJK languages
     '》': ' ',  # Remove right double angle quotation mark in CJK languages
-    'ّ': ' ',  # Remove Arabic shadda (mark indicating gemination)
-    'ٔ': ' ',  # Remove Arabic small high sign
     '「': ' ',  # Remove Japanese corner bracket (left)
     '」': ' ',  # Remove Japanese corner bracket (right)
     '、': ' ',  # Remove Japanese comma
@@ -245,9 +242,6 @@ sign_dict_en = {
     'ヽ': ' ',  # Remove Japanese iteration mark
     '\n': ' ',  # Replace newline with space
     '\r': ' ',  # Replace carriage return with space
-    '‎': ' ',  # Replace invisible empty space character with a regular space
-    '‌': ' ',  # Replace Zero Width Non-Joiner with a regular space
-    '\u00A0': ' ',  # Replace non-breaking spaces with regular space
 }
 
 
@@ -276,6 +270,7 @@ sign_dict_fa = {
     '#': '',  # Remove unwanted character '#'
     '$': '',  # Remove unwanted character '$'
     '%': '٪',  # Replace percentage sign with the Persian percentage sign
+    '٪': ' درصد ',  # Replace percentage sign with the Persian percentage sign
     '^': '',  # Remove unwanted character '^'
     '&': '',  # Remove unwanted character '&'
     '*': '',  # Remove unwanted character '*'
