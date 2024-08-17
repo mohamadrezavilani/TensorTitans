@@ -33,6 +33,17 @@ persian_processor = PersianTextPreprocessor()
 english_processor = EnglishTextPreprocessor()
 
 
+def delete_records_with_brackets(df, column_name):
+
+    # Compile regex pattern to detect content in brackets
+    pattern = re.compile(r'\[.*?\]')
+
+    # Filter out rows where the column contains the unwanted patterns
+    cleaned_df = df[~df[column_name].str.contains(pattern)].copy()
+
+    return cleaned_df
+
+
 def process_file(file_path):
     try:
         # Load the CSV file
@@ -46,23 +57,14 @@ def process_file(file_path):
         if 'English' in df.columns:
             df['Cleaned_English'] = english_processor.process_column(df['English'])
 
+        df = delete_records_with_brackets(df, 'Farsi')
+        df = delete_records_with_brackets(df, 'English')
         cleaned_file_path = os.path.join(directory_path, f"cleaned_{os.path.basename(file_path)}")
         df.to_csv(cleaned_file_path, index=False)
         print(f"Cleaned and saved: {cleaned_file_path}")
 
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
-
-
-def delete_records_with_brackets(df, column_name):
-
-    # Compile regex pattern to detect content in brackets
-    pattern = re.compile(r'\[.*?\]')
-
-    # Filter out rows where the column contains the unwanted patterns
-    cleaned_df = df[~df[column_name].str.contains(pattern)].copy()
-
-    return cleaned_df
 
 
 def main():

@@ -1,6 +1,6 @@
 import emoji
 import re
-from hazm import Normalizer
+# from hazm import Normalizer
 from num2words import num2words
 from Dictionaries import (arabic_dict,
                           num_dict,
@@ -28,6 +28,26 @@ class PersianTextPreprocessor:
                 continue
         return df
 
+
+    def separate_cases(self, text):
+        # Separate joined words that mix numbers and letters or different cases
+        if len(text) <= 1:
+            return ' '
+
+        new_text = ""
+        last_char_all_num = text[0].isalnum()  # Check if the first character is alphanumeric
+
+        for char in text:
+            # Separate the text when transitioning between numbers/letters or cases
+            if char.isalnum() != last_char_all_num and char.isalnum():
+                new_text += " " + char
+            else:
+                new_text += char
+
+            last_char_all_num = char.isalnum()  # Update the last character type
+
+        return new_text
+
     def remove_url(self, text):
         # Remove URLs from the text using a regular expression
         return re.sub(r'http[s]?://\S+', '', text)
@@ -40,9 +60,9 @@ class PersianTextPreprocessor:
         text = re.sub(r'@(\w+\.)*\w+', '', text)  # Remove mentions followed by a dot
         text = re.sub(r'@\w+', '', text)  # Remove mentions
         text = re.sub(r'#\w+', '', text)  # Remove hashtags
-        text = text.replace('\n', ' ')  # Replace newline characters with a space
-        text = re.sub(r'\s+', ' ', text)  # Remove multiple spaces
-        text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
+        # text = text.replace('\n', ' ')  # Replace newline characters with a space
+        # text = re.sub(r'\s+', ' ', text)  # Remove multiple spaces
+        # text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
         text = text.lower()  # Convert all text to lowercase
 
         return text
@@ -71,7 +91,7 @@ class PersianTextPreprocessor:
         text = re.sub(r'\s+»', '»', text)  # Remove space before closing quote/parenthesis
         text = re.sub(r'«\s+', '«', text)  # Remove space after opening quote/parenthesis
 
-        # Clean any leftover unwanted spaces or characters
+        # Clean any leftover unwanted spaces or characters, while preserving %
         text = re.sub(r'\s*\.\.\.\s*', '…', text)  # Ensure ellipsis is formatted properly
         text = re.sub(r'\s*\-\s*', '—', text)  # Ensure em dashes are formatted properly
 
@@ -80,26 +100,6 @@ class PersianTextPreprocessor:
 
         return text
 
-    def separate_cases(self, text):
-        # Separate joined words that mix numbers and letters or different cases
-        if len(text) <= 1:
-            return ' '
-
-        new_text = ""
-        last_char_all_num = text[0].isalnum()  # Check if the first character is alphanumeric
-
-        for char in text:
-            # Separate the text when transitioning between numbers/letters or cases
-            if char.isalnum() != last_char_all_num and char.isalnum():
-                new_text += " " + char
-            else:
-                new_text += char
-
-            last_char_all_num = char.isalnum()  # Update the last character type
-
-        return new_text
-
-
     def clean_farsi_text_punctuation(self, text):
         """
         Cleans Farsi text by handling whitespace and spacing around punctuation.
@@ -107,7 +107,7 @@ class PersianTextPreprocessor:
         # Replace multiple spaces with a single space
         text = re.sub(r'\s+', ' ', text)
 
-        # Remove spaces before punctuation marks
+        # Remove spaces before punctuation marks, except %
         text = re.sub(r'\s([؟!.،](?:\s|$))', r'\1', text)
 
         text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with a single space
@@ -125,15 +125,12 @@ class PersianTextPreprocessor:
     def convert_numbers_to_words_fa(self, text):
         # Convert numbers in the text to their word equivalents in Persian
         def convert(match):
-            number = int(match.group())  # Extract the number from the regex match
-            return num2words(number, lang='fa')  # Convert the number to words in Persian
+            if match:
+                number = int(match.group(0))  # Use group(0) to safely extract the full match
+                return num2words(number, lang='fa')
+            return match.group(0)  # Return the original text if no conversion is done
 
         return re.sub(r'\d+', convert, text)  # Replace numbers with their word forms
-
-    def remove_consecutive_duplicates(self, text):
-        # Remove or limit consecutive duplicate characters
-        pattern = r'(\w)\1{1,}'  # Match any character repeated more than once consecutively
-        return re.sub(pattern, r'\1\1', text)  # Replace with two occurrences of the character
 
     def pre_process(self, text):
         # Apply dictionary-based substitutions and other standard preprocessing steps
@@ -172,13 +169,13 @@ class PersianTextPreprocessor:
 
     def process_column(self, column):
         # Apply all preprocessing steps to a DataFrame column
+        column = column.apply(self.pre_process)  # Apply final preprocessing using dictionaries
         column = column.apply(self.remove_elements)  # Clean text elements like mentions, hashtags, etc.
         column = column.apply(self.remove_url)  # Remove URLs
         column = column.apply(self.separate_cases)  # Separate mixed-case and alphanumeric sequences
         column = column.apply(self.handle_persian_punctuation)  # Clean punctuation spacing
         column = column.apply(self.clean_farsi_text_punctuation)  # Clean punctuation spacing
-        column = column.apply(self.convert_numbers_to_words_fa)  # Convert numbers to words in Persian
-        column = column.apply(self.pre_process)  # Apply final preprocessing using dictionaries
+        # column = column.apply(self.convert_numbers_to_words_fa)  # Convert numbers to words in Persian
         # column = column.apply(self.normalize_persian)  # Normalize Farsi text (if needed)
         # column = column.apply(self.remove_consecutive_duplicates)  # Remove consecutive duplicate characters
         # column = column.apply(self.add_half_space)  # Add half-spaces where needed

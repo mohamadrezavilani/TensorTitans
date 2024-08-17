@@ -1,6 +1,9 @@
 import re
 from bs4 import BeautifulSoup
 from num2words import num2words
+import nltk
+# nltk.download('stopwords')
+# nltk.download('punkt')
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
@@ -28,27 +31,18 @@ class EnglishTextPreprocessor:
 
     # Remove specific elements like mentions, hashtags, and newlines
     def remove_elements(self, text):
+        # Handle and clean different noise elements like mentions, hashtags, newlines, etc.
         if isinstance(text, float):
             return ''
+
         text = re.sub(r'@(\w+\.)*\w+', '', text)  # Remove mentions followed by a dot
         text = re.sub(r'@\w+', '', text)  # Remove mentions
         text = re.sub(r'#\w+', '', text)  # Remove hashtags
         text = text.replace('\n', ' ')  # Replace newline characters with a space
         text = re.sub(r'\s+', ' ', text)  # Remove multiple spaces
-        text = text.lower()  # Convert all text to lowercase
-        return text.strip()
+        text = re.sub(r'[^\w\s%]', '', text)  # Remove punctuation except for %
 
-    # Clean HTML content by removing unwanted tags like style, script, code, etc.
-    def clean_html(self, text):
-        # Initialize BeautifulSoup with the input text, treating it as potential HTML
-        soup = BeautifulSoup(text, "html.parser")
-
-        # Remove unwanted tags
-        for tag in soup(['style', 'script', 'code', 'a']):
-            tag.decompose()  # Remove the entire tag and its contents
-
-        # Return the cleaned text with HTML tags removed, but maintaining other content
-        return ' '.join(soup.stripped_strings)
+        return text
 
     # Separate alphanumeric cases (e.g., "abc123" -> "abc 123")
     def separate_cases(self, text):
@@ -115,13 +109,12 @@ class EnglishTextPreprocessor:
     # Full text processing pipeline for a column
     def process_column(self, column):
         column = column.apply(self.to_lower_case)
+        column = column.apply(self.apply_dictionary_replacements)  # Apply dictionary-based replacements
         column = column.apply(self.remove_url_and_html)  # Remove URLs and HTML tags
         column = column.apply(self.remove_elements)  # Remove unwanted elements like mentions and hashtags
-        column = column.apply(self.clean_html)  # Clean remaining HTML content
         column = column.apply(self.separate_cases)  # Separate alphanumeric cases
         column = column.apply(self.clean_english_text_punctuation)  # Clean punctuation issues
-        column = column.apply(self.apply_dictionary_replacements)  # Apply dictionary-based replacements
-        column = column.apply(self.convert_numbers_to_words_en)  # Convert numbers to words (if needed)
+        # column = column.apply(self.convert_numbers_to_words_en)  # Convert numbers to words (if needed)
         column = column.apply(self.normalize_text)  # Normalize text (tokenize)
         # column = column.apply(self.remove_stopwords)  # Remove stopwords from tokens
         # column = column.apply(self.apply_stemming)  # Apply stemming (if needed)
