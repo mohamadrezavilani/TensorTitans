@@ -1,33 +1,56 @@
 import re
+from bs4 import BeautifulSoup
+from num2words import num2words
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
-from Dictionaries import english_dict, sign_dict, num_dict
+from Dictionaries import english_dict, contractions_dict, sign_dict_en
 
 
 class EnglishTextPreprocessor:
     def __init__(self):
         self.stopwords = set(stopwords.words('english'))
         self.stemmer = PorterStemmer()
-        self.sign_dict = sign_dict
-        self.num_dict = num_dict
         self.english_dict = english_dict
+        self.contractions_dict = contractions_dict
+        self.sign_dict_en = sign_dict_en
 
-    def remove_url(self, text):
-        text = re.sub(r'http[s]?://\S+', '', text)
+    def to_lower_case(self, text):
+        text = text.lower()  # Convert text to lowercase
         return text
 
+    # Remove URLs and HTML tags
+    def remove_url_and_html(self, text):
+        text = re.sub(r'http[s]?://\S+', '', text)  # Remove URLs
+        text = re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)  # Remove URLs with newlines
+        text = re.sub('<.*?>+', '', text)  # Remove HTML tags
+        return text
+
+    # Remove specific elements like mentions, hashtags, and newlines
     def remove_elements(self, text):
         if isinstance(text, float):
             return ''
-        text = re.sub(r'@(\w+\.)*\w+', '', text)
-        text = re.sub(r'@\w+', '', text)
-        text = re.sub(r'#\w+', '', text)
-        text = text.replace('\n', ' ')
-        text = re.sub('\s+', ' ', text)
-        text = text.lower()
+        text = re.sub(r'@(\w+\.)*\w+', '', text)  # Remove mentions followed by a dot
+        text = re.sub(r'@\w+', '', text)  # Remove mentions
+        text = re.sub(r'#\w+', '', text)  # Remove hashtags
+        text = text.replace('\n', ' ')  # Replace newline characters with a space
+        text = re.sub(r'\s+', ' ', text)  # Remove multiple spaces
+        text = text.lower()  # Convert all text to lowercase
         return text.strip()
 
+    # Clean HTML content by removing unwanted tags like style, script, code, etc.
+    def clean_html(self, text):
+        # Initialize BeautifulSoup with the input text, treating it as potential HTML
+        soup = BeautifulSoup(text, "html.parser")
+
+        # Remove unwanted tags
+        for tag in soup(['style', 'script', 'code', 'a']):
+            tag.decompose()  # Remove the entire tag and its contents
+
+        # Return the cleaned text with HTML tags removed, but maintaining other content
+        return ' '.join(soup.stripped_strings)
+
+    # Separate alphanumeric cases (e.g., "abc123" -> "abc 123")
     def separate_cases(self, text):
         if len(text) <= 1:
             return ' '
@@ -42,29 +65,66 @@ class EnglishTextPreprocessor:
             last_char_all_num = char.isalnum()
         return new_text
 
-    def remove_consecutive_duplicates(self, text):
-        pattern = r'(\w)\1{1,}'
-        return re.sub(pattern, r'\1\1', text)
+    def clean_english_text_punctuation(self, text):
+        """
+        Cleans English text by handling whitespace and basic punctuation issues.
+        """
+        text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with a single space
+        text = re.sub(r'\s([?.!,":;](?:\s|$))', r'\1', text)  # Remove spaces before punctuation
+        text = re.sub(r'\.(?=\S)', '. ', text)  # Ensure space after a period
+        text = re.sub(r'\b\d{1,2} [A-Za-z]+ \d{4}\b', '', text)  # Remove dates (e.g., "1 July 1818")
+        text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with a single space
+        text = re.sub(r'\s*,\s*', ', ', text)  # Clean up any commas
+        text = re.sub(r'\s*\.\s*', '. ', text)  # Clean up any periods
+        text = re.sub(r'\s*-\s*', '-', text)  # Clean up any hyphens
+        text = re.sub(r'\s+', ' ', text).strip()  # Final cleanup of extra spaces
 
-    def normalize_and_stem(self, text):
-        text = text.lower()
-        text = word_tokenize(text)
-        text = [self.stemmer.stem(word) for word in text if word not in self.stopwords]
-        text = ' '.join(text)
+        return text
 
-        dictionaries = [self.sign_dict, self.num_dict, self.english_dict]
-
-        for dictionary in dictionaries:
+    def apply_dictionary_replacements(self, text):
+        """Apply dictionary replacements."""
+        dictionaries_eng = [self.english_dict, self.contractions_dict, self.sign_dict_en]
+        for dictionary in dictionaries_eng:
             for key, value in dictionary.items():
                 text = re.sub(re.escape(key), value, text)
+        return text
 
-        text = re.sub("\s+", ' ', text)
-        return text.strip()
 
+    def convert_numbers_to_words_en(self, text):
+        # Convert numbers to words in English
+        number = int(text.group())
+        return num2words(number, lang='en')
+
+    def normalize_text(self, text):
+        """Convert text to lowercase and tokenize it."""
+        tokens = word_tokenize(text)
+        return tokens
+
+    def remove_stopwords(self, tokens):
+        """Remove stopwords from tokenized text."""
+        return [word for word in tokens if word not in self.stopwords]
+
+    def apply_stemming(self, tokens):
+        """Apply stemming to tokenized text."""
+        return [self.stemmer.stem(word) for word in tokens]
+
+    def clean_extra_spaces(self, text):
+        """Remove extra spaces."""
+        return re.sub(r"\s+", ' ', text).strip()
+
+    # Full text processing pipeline for a column
     def process_column(self, column):
-        column = column.apply(self.remove_elements)
-        column = column.apply(self.remove_url)
-        column = column.apply(self.separate_cases)
-        column = column.apply(self.remove_consecutive_duplicates)
-        column = column.apply(self.normalize_and_stem)
+        column = column.apply(self.to_lower_case)
+        column = column.apply(self.remove_url_and_html)  # Remove URLs and HTML tags
+        column = column.apply(self.remove_elements)  # Remove unwanted elements like mentions and hashtags
+        column = column.apply(self.clean_html)  # Clean remaining HTML content
+        column = column.apply(self.separate_cases)  # Separate alphanumeric cases
+        column = column.apply(self.clean_english_text_punctuation)  # Clean punctuation issues
+        column = column.apply(self.apply_dictionary_replacements)  # Apply dictionary-based replacements
+        column = column.apply(self.convert_numbers_to_words_en)  # Convert numbers to words (if needed)
+        column = column.apply(self.normalize_text)  # Normalize text (tokenize)
+        # column = column.apply(self.remove_stopwords)  # Remove stopwords from tokens
+        # column = column.apply(self.apply_stemming)  # Apply stemming (if needed)
+        column = column.apply(lambda x: ' '.join(x))  # Join tokens back into a single string
+        column = column.apply(self.clean_extra_spaces)  # Clean extra spaces
         return column

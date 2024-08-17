@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import re
 from DataCleaning.DataCleaningFunctions_Persian import PersianTextPreprocessor
 from DataCleaning.DataCleaningFunctions_English import EnglishTextPreprocessor
 
@@ -8,23 +9,23 @@ directory_path = "DataSource"
 
 # List of files in the directory
 files = [
-    "NeuLab-TedTalks-fa.csv",
     "ELRC_2922-fa.csv",
     "GNOME-fa.csv",
-    "infopankki-fa.csv",
-    "QED-fa.csv",
-    "Tanzil-fa.csv",
-    "TED2020-fa.csv",
-    "TEP-fa.csv",
-    "tico-19-fa.csv",
-    "tldr-pages-fa.csv",
-    "MIZAN-fa.csv",
-    "Ubuntu-fa.csv",
-    "WikiMatrix-fa.csv",
-    "wikimedia-fa.csv",
-    "XLEnt-fa.csv",
-    "OpenSubtitles-fa.csv",
-    "Sentence pairs in Persian-English - 2024-08-15.csv"
+    # "NeuLab-TedTalks-fa.csv",
+    # "infopankki-fa.csv",
+    # "QED-fa.csv",
+    # "Tanzil-fa.csv",
+    # "TED2020-fa.csv",
+    # "TEP-fa.csv",
+    # "tico-19-fa.csv",
+    # "tldr-pages-fa.csv",
+    # "MIZAN-fa.csv",
+    # "Ubuntu-fa.csv",
+    # "WikiMatrix-fa.csv",
+    # "wikimedia-fa.csv",
+    # "XLEnt-fa.csv",
+    # "OpenSubtitles-fa.csv",
+    # "Sentence pairs in Persian-English - 2024-08-15.csv"
 ]
 
 # Instantiate the text processors
@@ -51,6 +52,17 @@ def process_file(file_path):
 
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
+
+
+def delete_records_with_brackets(df, column_name):
+
+    # Compile regex pattern to detect content in brackets
+    pattern = re.compile(r'\[.*?\]')
+
+    # Filter out rows where the column contains the unwanted patterns
+    cleaned_df = df[~df[column_name].str.contains(pattern)].copy()
+
+    return cleaned_df
 
 
 def main():
