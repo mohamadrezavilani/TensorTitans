@@ -1,2 +1,5 @@
 *.csv
 *.xlsx
+.idea/
+.venv
+venv
