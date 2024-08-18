@@ -1,2 +1,12 @@
+<<<<<<< HEAD
 *.csv
 *.xlsx
+=======
+/.idea/.gitignore
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/TensorTitans.iml
+/.idea/vcs.xml
+>>>>>>> 06eb32c (fix Transformers.ipynb train and make output model)
