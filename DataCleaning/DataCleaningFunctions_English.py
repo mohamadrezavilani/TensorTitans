@@ -1,5 +1,4 @@
 import re
-from bs4 import BeautifulSoup
 from num2words import num2words
 import nltk
 # nltk.download('stopwords')
@@ -7,7 +6,12 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
-from Dictionaries import english_dict, contractions_dict, sign_dict_en
+from Dictionaries import (english_dict,
+                          contractions_dict,
+                          sign_dict_en,
+                          special_char_dict
+
+                          )
 
 
 class EnglishTextPreprocessor:
@@ -17,6 +21,7 @@ class EnglishTextPreprocessor:
         self.english_dict = english_dict
         self.contractions_dict = contractions_dict
         self.sign_dict_en = sign_dict_en
+        self.special_char_dict = special_char_dict
 
     def to_lower_case(self, text):
         text = text.lower()  # Convert text to lowercase
@@ -77,7 +82,11 @@ class EnglishTextPreprocessor:
 
     def apply_dictionary_replacements(self, text):
         """Apply dictionary replacements."""
-        dictionaries_eng = [self.english_dict, self.contractions_dict, self.sign_dict_en]
+        dictionaries_eng = [self.english_dict,
+                            self.contractions_dict,
+                            self.sign_dict_en,
+                            self.special_char_dict
+                            ]
         for dictionary in dictionaries_eng:
             for key, value in dictionary.items():
                 text = re.sub(re.escape(key), value, text)
@@ -109,9 +118,9 @@ class EnglishTextPreprocessor:
     # Full text processing pipeline for a column
     def process_column(self, column):
         column = column.apply(self.to_lower_case)
-        column = column.apply(self.apply_dictionary_replacements)  # Apply dictionary-based replacements
         column = column.apply(self.remove_url_and_html)  # Remove URLs and HTML tags
         column = column.apply(self.remove_elements)  # Remove unwanted elements like mentions and hashtags
+        column = column.apply(self.apply_dictionary_replacements)  # Apply dictionary-based replacements
         column = column.apply(self.separate_cases)  # Separate alphanumeric cases
         column = column.apply(self.clean_english_text_punctuation)  # Clean punctuation issues
         # column = column.apply(self.convert_numbers_to_words_en)  # Convert numbers to words (if needed)

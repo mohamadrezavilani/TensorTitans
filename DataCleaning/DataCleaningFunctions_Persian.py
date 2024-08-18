@@ -5,7 +5,8 @@ from num2words import num2words
 from Dictionaries import (arabic_dict,
                           num_dict,
                           sign_dict_fa,
-                          english_dict)
+                          english_dict,
+                          special_char_dict)
 
 
 class PersianTextPreprocessor:
@@ -13,8 +14,9 @@ class PersianTextPreprocessor:
         # Initialize dictionaries for translation or mapping of characters and symbols
         self.arabic_dict = arabic_dict
         self.num_dict = num_dict
-        self.sign_dict = sign_dict_fa
+        self.sign_dict_fa = sign_dict_fa
         self.english_dict = english_dict
+        self.special_char_dict = special_char_dict
 
     def find_emoji(self, df):
         # Identify and handle rows containing emojis within a DataFrame column
@@ -28,6 +30,9 @@ class PersianTextPreprocessor:
                 continue
         return df
 
+    def to_lower_case(self, text):
+        text = text.lower()  # Convert text to lowercase
+        return text
 
     def separate_cases(self, text):
         # Separate joined words that mix numbers and letters or different cases
@@ -52,6 +57,21 @@ class PersianTextPreprocessor:
         # Remove URLs from the text using a regular expression
         return re.sub(r'http[s]?://\S+', '', text)
 
+    def remove_html_tags(self, text):
+        # Remove HTML tags using a regular expression
+        text = re.sub(r'<[^>]+>', '', text)
+        return text
+
+    def remove_encoded_email_strings(self, text):
+        # Remove email-like strings with non-standard characters
+        text = re.sub(r'[^\x00-\x7F]+<[\w\.\-]+@[\w\.\-]+\.[a-zA-Z]{2,}>', '', text)
+        return text
+
+    def remove_emails(self, text):
+        # Remove standard email addresses
+        text = re.sub(r'\b[\w\.-]+@[\w\.-]+\.\w+\b', '', text)
+        return text
+
     def remove_elements(self, text):
         # Handle and clean different noise elements like mentions, hashtags, newlines, etc.
         if isinstance(text, float):
@@ -75,25 +95,25 @@ class PersianTextPreprocessor:
         # Replace multiple spaces with a single space
         text = re.sub(r'\s+', ' ', text)
 
-        # Ensure no space before Persian comma, and one space after it
-        text = re.sub(r'\s*،\s*', '، ', text)
-
-        # Ensure no space before periods, question marks, exclamation marks, and one space after them
-        text = re.sub(r'\s*([؟!.…])\s*', r'\1 ', text)
-
-        # Ensure no space before other common punctuation marks like colon and semicolon
-        text = re.sub(r'\s*([:؛])\s*', r'\1 ', text)
-
-        # Remove space before punctuation at the end of the text
-        text = re.sub(r'\s+([،؟!.:؛…])$', r'\1', text)
-
-        # Handle quotes and parentheses (or other adjusted signs from replacements)
-        text = re.sub(r'\s+»', '»', text)  # Remove space before closing quote/parenthesis
-        text = re.sub(r'«\s+', '«', text)  # Remove space after opening quote/parenthesis
-
-        # Clean any leftover unwanted spaces or characters, while preserving %
-        text = re.sub(r'\s*\.\.\.\s*', '…', text)  # Ensure ellipsis is formatted properly
-        text = re.sub(r'\s*\-\s*', '—', text)  # Ensure em dashes are formatted properly
+        # # Ensure no space before Persian comma, and one space after it
+        # text = re.sub(r'\s*،\s*', '، ', text)
+        #
+        # # Ensure no space before periods, question marks, exclamation marks, and one space after them
+        # text = re.sub(r'\s*([؟!.…])\s*', r'\1 ', text)
+        #
+        # # Ensure no space before other common punctuation marks like colon and semicolon
+        # text = re.sub(r'\s*([:؛])\s*', r'\1 ', text)
+        #
+        # # Remove space before punctuation at the end of the text
+        # text = re.sub(r'\s+([،؟!.:؛…])$', r'\1', text)
+        #
+        # # Handle quotes and parentheses (or other adjusted signs from replacements)
+        # text = re.sub(r'\s+»', '»', text)  # Remove space before closing quote/parenthesis
+        # text = re.sub(r'«\s+', '«', text)  # Remove space after opening quote/parenthesis
+        #
+        # # Clean any leftover unwanted spaces or characters, while preserving %
+        # text = re.sub(r'\s*\.\.\.\s*', '…', text)  # Ensure ellipsis is formatted properly
+        # text = re.sub(r'\s*\-\s*', '—', text)  # Ensure em dashes are formatted properly
 
         # Strip leading and trailing whitespace
         text = text.strip()
@@ -108,16 +128,16 @@ class PersianTextPreprocessor:
         text = re.sub(r'\s+', ' ', text)
 
         # Remove spaces before punctuation marks, except %
-        text = re.sub(r'\s([؟!.،](?:\s|$))', r'\1', text)
+        # text = re.sub(r'\s([؟!.،](?:\s|$))', r'\1', text)
 
         text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with a single space
-        text = re.sub(r'\s([?.!,":;](?:\s|$))', r'\1', text)  # Remove spaces before punctuation
+        # text = re.sub(r'\s([?.!,":;](?:\s|$))', r'\1', text)  # Remove spaces before punctuation
         text = re.sub(r'\.(?=\S)', '. ', text)  # Ensure space after a period
         text = re.sub(r'\b\d{1,2} [A-Za-z]+ \d{4}\b', '', text)  # Remove dates (e.g., "1 July 1818")
         text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with a single space
-        text = re.sub(r'\s*,\s*', ', ', text)  # Clean up any commas
-        text = re.sub(r'\s*\.\s*', '. ', text)  # Clean up any periods
-        text = re.sub(r'\s*-\s*', '-', text)  # Clean up any hyphens
+        # text = re.sub(r'\s*,\s*', ', ', text)  # Clean up any commas
+        # text = re.sub(r'\s*\.\s*', '. ', text)  # Clean up any periods
+        # text = re.sub(r'\s*-\s*', '-', text)  # Clean up any hyphens
         text = re.sub(r'\s+', ' ', text).strip()  # Final cleanup of extra spaces
 
         return text
@@ -136,7 +156,14 @@ class PersianTextPreprocessor:
         # Apply dictionary-based substitutions and other standard preprocessing steps
         text = text.lower()  # Convert all text to lowercase
 
-        dictionaries = [self.sign_dict, self.arabic_dict, self.num_dict, self.english_dict]
+        dictionaries = [
+            self.sign_dict_fa,
+                        self.arabic_dict,
+                        self.num_dict,
+                        self.english_dict,
+                        self.special_char_dict
+
+                        ]
 
         # Replace text based on the provided dictionaries
         for dictionary in dictionaries:
@@ -165,13 +192,17 @@ class PersianTextPreprocessor:
 
     def remove_half_space(self, text):
         # Remove half-space characters from the text
-        return text.replace('\u200C', '')
+        return text.replace('\u200C', ' ')
 
     def process_column(self, column):
         # Apply all preprocessing steps to a DataFrame column
-        column = column.apply(self.pre_process)  # Apply final preprocessing using dictionaries
+        column = column.apply(self.to_lower_case)
         column = column.apply(self.remove_elements)  # Clean text elements like mentions, hashtags, etc.
         column = column.apply(self.remove_url)  # Remove URLs
+        column = column.apply(self.remove_encoded_email_strings)  # Remove encoded email strings
+        column = column.apply(self.remove_html_tags)  # Remove HTML tags
+        column = column.apply(self.remove_emails)  # Remove email addresses
+        column = column.apply(self.pre_process)  # Apply final preprocessing using dictionaries
         column = column.apply(self.separate_cases)  # Separate mixed-case and alphanumeric sequences
         column = column.apply(self.handle_persian_punctuation)  # Clean punctuation spacing
         column = column.apply(self.clean_farsi_text_punctuation)  # Clean punctuation spacing
@@ -179,6 +210,6 @@ class PersianTextPreprocessor:
         # column = column.apply(self.normalize_persian)  # Normalize Farsi text (if needed)
         # column = column.apply(self.remove_consecutive_duplicates)  # Remove consecutive duplicate characters
         # column = column.apply(self.add_half_space)  # Add half-spaces where needed
-        # column = column.apply(self.remove_half_space)  # Optionally remove half-spaces
+        column = column.apply(self.remove_half_space)  # Optionally remove half-spaces
 
         return column
