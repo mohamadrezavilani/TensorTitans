@@ -2,7 +2,7 @@ import pandas as pd
 
 # Step 1: Load the CSV file
 df = pd.read_csv('.csv') # add the file path here
-print(df)
+
 # Step 2: Split the DataFrame into three parts
 # Option A: Even split
 part_size = len(df) // 3
@@ -22,6 +22,5 @@ part_3 = df.iloc[2*part_size:]
 
 # Step 3: Handle each part (Example: save each part to a new CSV file)
 part_1.to_csv('part1.csv', index=False)
-print(part_1)
 part_2.to_csv('part2.csv', index=False)
 part_3.to_csv('part3.csv', index=False)
