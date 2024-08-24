@@ -21,6 +21,6 @@ part_3 = df.iloc[2*part_size:]
 # part_3 = df[df['column_name'] >= value2]
 
 # Step 3: Handle each part (Example: save each part to a new CSV file)
-part_1.to_csv('part1.csv', index=False)
-part_2.to_csv('part2.csv', index=False)
-part_3.to_csv('part3.csv', index=False)
+part_1.to_csv('DataSource/part1.csv', index=False)
+part_2.to_csv('DataSource/part2.csv', index=False)
+part_3.to_csv('DataSource/part3.csv', index=False)
