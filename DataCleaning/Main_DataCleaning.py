@@ -21,12 +21,12 @@ files = [
     "Sentence pairs in Persian-English - 2024-08-15.csv",
     "TEP-fa.csv",
     "TED2020-fa.csv",
-    "WikiMatrix-fa.csv",
-    "wikimedia-fa.csv",
-    "XLEnt-fa.csv",
-    "LinguaTools-WikiTitles-fa.csv",
     "MIZAN-fa.csv",
     "Tanzil-fa.csv",
+    "WikiMatrix-fa.csv",
+    "wikimedia-fa.csv",
+    "LinguaTools-WikiTitles-fa.csv",
+    "XLEnt-fa.csv",
     "OpenSubtitles-fa.csv",
 ]
 
