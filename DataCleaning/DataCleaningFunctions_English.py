@@ -9,9 +9,11 @@ from nltk.stem import PorterStemmer
 from Dictionaries import (english_dict,
                           contractions_dict,
                           sign_dict_en,
-                          special_char_dict
+                          special_char_dict,
+                          month_dict,
 
-                          )
+
+)
 
 
 class EnglishTextPreprocessor:
@@ -22,9 +24,11 @@ class EnglishTextPreprocessor:
         self.contractions_dict = contractions_dict
         self.sign_dict_en = sign_dict_en
         self.special_char_dict = special_char_dict
+        self.month_dict = month_dict
 
     def to_lower_case(self, text):
         text = text.lower()  # Convert text to lowercase
+
         return text
 
     # Remove URLs and HTML tags
@@ -80,18 +84,34 @@ class EnglishTextPreprocessor:
 
         return text
 
+    def replace_months(self, text):
+        if not isinstance(text, str):  # Convert non-strings to empty string
+            return ''
+        for short, full in month_dict.items():
+            text = re.sub(rf'\b{short}\b', full, text)
+            text = re.sub(rf'\b\d+ {short}\b', lambda m: f"{m.group(0).split()[0]} {full}", text)
+        return text
+
     def apply_dictionary_replacements(self, text):
         """Apply dictionary replacements."""
-        dictionaries_eng = [self.english_dict,
-                            self.contractions_dict,
-                            self.sign_dict_en,
-                            self.special_char_dict
+        dictionaries_eng = [
+            self.contractions_dict,
+            self.english_dict,
+            self.sign_dict_en,
+            self.special_char_dict,
                             ]
         for dictionary in dictionaries_eng:
             for key, value in dictionary.items():
                 text = re.sub(re.escape(key), value, text)
         return text
 
+    def remove_numbers_only_cells(self, text):
+        # Remove any formatting characters
+        stripped_text = re.sub(r'[\s,]+', '', text)
+        # Check if the text is purely numeric after removing spaces and commas
+        if stripped_text.isdigit():
+            return ''  # Return empty string if the text is just numbers
+        return text
 
     def convert_numbers_to_words_en(self, text):
         # Convert numbers to words in English
@@ -123,6 +143,7 @@ class EnglishTextPreprocessor:
         column = column.apply(self.apply_dictionary_replacements)  # Apply dictionary-based replacements
         column = column.apply(self.separate_cases)  # Separate alphanumeric cases
         column = column.apply(self.clean_english_text_punctuation)  # Clean punctuation issues
+        column = column.apply(self.remove_numbers_only_cells)  # Remove cells containing only numbers
         # column = column.apply(self.convert_numbers_to_words_en)  # Convert numbers to words (if needed)
         column = column.apply(self.normalize_text)  # Normalize text (tokenize)
         # column = column.apply(self.remove_stopwords)  # Remove stopwords from tokens

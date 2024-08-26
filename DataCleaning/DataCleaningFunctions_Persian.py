@@ -6,7 +6,8 @@ from Dictionaries import (arabic_dict,
                           num_dict,
                           sign_dict_fa,
                           english_dict,
-                          special_char_dict)
+                          special_char_dict,
+                          month_dict)
 
 
 class PersianTextPreprocessor:
@@ -17,6 +18,7 @@ class PersianTextPreprocessor:
         self.sign_dict_fa = sign_dict_fa
         self.english_dict = english_dict
         self.special_char_dict = special_char_dict
+        self.month_dict = month_dict
 
     def find_emoji(self, df):
         # Identify and handle rows containing emojis within a DataFrame column
@@ -32,6 +34,7 @@ class PersianTextPreprocessor:
 
     def to_lower_case(self, text):
         text = text.lower()  # Convert text to lowercase
+
         return text
 
     def separate_cases(self, text):
@@ -142,6 +145,25 @@ class PersianTextPreprocessor:
 
         return text
 
+    import re
+
+    def remove_english_words(self, persian_text):
+        # Regular expression pattern to match English words (only alphabetic characters)
+        pattern = r'[a-zA-Z]'
+
+        # Replace matched patterns (English words) with an empty string
+        cleaned_text = re.sub(pattern, '', persian_text)
+
+        # Clean up extra spaces that may result from the removal
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+
+        return cleaned_text
+
+    def remove_cyrillic(self, text):
+        cyrillic_pattern = r'[\u0400-\u04FF\u0500-\u052F\u2DE0-\u2DFF\uA640-\uA69F]+'
+        cleaned_text = re.sub(cyrillic_pattern, '', text)
+        return cleaned_text
+
     def convert_numbers_to_words_fa(self, text):
         # Convert numbers in the text to their word equivalents in Persian
         def convert(match):
@@ -161,8 +183,7 @@ class PersianTextPreprocessor:
                         self.arabic_dict,
                         self.num_dict,
                         self.english_dict,
-                        self.special_char_dict
-
+                        self.special_char_dict,
                         ]
 
         # Replace text based on the provided dictionaries
@@ -171,7 +192,7 @@ class PersianTextPreprocessor:
                 text = re.sub(re.escape(key), value, text)
 
         # Additional replacements for specific cases
-        text = re.sub("\s+", ' ', text)  # Replace multiple spaces with a single space
+        text = re.sub(r"\s+", ' ', text)  # Replace multiple spaces with a single space
         text = text.strip()  # Trim leading and trailing spaces
 
         return text
@@ -182,17 +203,26 @@ class PersianTextPreprocessor:
         # Normalize Farsi text
         return normalizer.normalize(text)
 
-    def add_half_space(self, text):
-        # Add half-space where appropriate in Farsi text
-        text = re.sub(r'\s+ها\s+', r'\u200Cها', text)
-        text = re.sub(r'\s+می\s+', r'\u200Cمی\u200C', text)
-        text = re.sub(r'\s+تر\s+', r'\u200Cتر', text)
-        text = re.sub(r'\s+ترین\s+', r'\u200Cترین', text)
+    def remove_half_space(self, text):
+        # Define a regex pattern to match the half-space followed by specific suffixes
+        pattern = r'(\u200C)(ها|می|تر|ترین)'
+
+        # Replace the half-space with a space if followed by the specified suffixes
+        text = re.sub(pattern, r' \2', text)
+
+        # Remove any remaining half-space characters
+        text = text.replace('\u200C', '')
+
         return text
 
-    def remove_half_space(self, text):
-        # Remove half-space characters from the text
-        return text.replace('\u200C', ' ')
+    def remove_numbers_only_cells(self, text):
+        # Remove any formatting characters
+        stripped_text = re.sub(r'[\s,]+', '', text)
+        # Check if the text is purely numeric after removing spaces and commas
+        if stripped_text.isdigit():
+            return ''  # Return empty string if the text is just numbers
+        return text
+
 
     def process_column(self, column):
         # Apply all preprocessing steps to a DataFrame column
@@ -204,12 +234,14 @@ class PersianTextPreprocessor:
         column = column.apply(self.remove_emails)  # Remove email addresses
         column = column.apply(self.pre_process)  # Apply final preprocessing using dictionaries
         column = column.apply(self.separate_cases)  # Separate mixed-case and alphanumeric sequences
+        column = column.apply(self.remove_english_words)
         column = column.apply(self.handle_persian_punctuation)  # Clean punctuation spacing
         column = column.apply(self.clean_farsi_text_punctuation)  # Clean punctuation spacing
+        column = column.apply(self.remove_cyrillic)
+        column = column.apply(self.remove_numbers_only_cells)  # Remove cells containing only numbers
         # column = column.apply(self.convert_numbers_to_words_fa)  # Convert numbers to words in Persian
         # column = column.apply(self.normalize_persian)  # Normalize Farsi text (if needed)
         # column = column.apply(self.remove_consecutive_duplicates)  # Remove consecutive duplicate characters
-        # column = column.apply(self.add_half_space)  # Add half-spaces where needed
         column = column.apply(self.remove_half_space)  # Optionally remove half-spaces
 
         return column
