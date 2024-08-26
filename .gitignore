@@ -1,6 +1,8 @@
 *.csv
 *.xlsx
-.idea/
+__pycache__
 .venv
 venv
-__pycache__
+*.iws
+workspace.xml
+tasks.xml
