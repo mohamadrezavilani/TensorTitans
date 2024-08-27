@@ -1,5 +1,5 @@
-*.csv
-*.xlsx
+#*.csv
+#*.xlsx
 __pycache__
 .venv
 venv
