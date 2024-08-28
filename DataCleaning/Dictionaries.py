@@ -189,30 +189,35 @@ contractions_dict = {
 
 # Maps various punctuation marks, symbols, and some special characters in English text to standardized forms, spaces, or removes them entirely.
 sign_dict_en = {
-    '...': ' . ',  # Maps ellipsis to a single period surrounded by spaces
-    '..': ' . ',  # Maps double period to a single period surrounded by spaces
-    '. . .': ' . ',  # Maps spaced ellipsis to a single period surrounded by spaces
-    '…': ' . ',  # Maps ellipsis symbol to a single period surrounded by spaces
-    '"': '"',  # Maps double quotation mark to itself
-    '“': '"',  # Maps left double quotation mark to standard double quote
-    '”': '"',  # Maps right double quotation mark to standard double quote
-    '‘': '"',  # Maps left single quotation mark to standard double quote
-    '’': '"',  # Maps right single quotation mark to standard double quote
-    '""': '"',  # Maps double double-quote to a single double quote
-    '-': ' - ',  # Maps hyphen to hyphen surrounded by spaces
+    ".": ' ',
+    ":": ' ',
+    '(': ' ',  # Maps left parenthesis to space
+    ')': ' ',  # Maps right parenthesis to space
+    "-": ' ',
+    '...': ' ',  # Maps ellipsis to a single period surrounded by spaces
+    '..': ' ',  # Maps double period to a single period surrounded by spaces
+    '. . .': ' ',  # Maps spaced ellipsis to a single period surrounded by spaces
+    '…': ' ',  # Maps ellipsis symbol to a single period surrounded by spaces
+    '"': ' ',  # Maps double quotation mark to itself
+    '“': ' ',  # Maps left double quotation mark to standard double quote
+    '”': ' ',  # Maps right double quotation mark to standard double quote
+    '‘': ' ',  # Maps left single quotation mark to standard double quote
+    '’': ' ',  # Maps right single quotation mark to standard double quote
+    '""': ' ',  # Maps double double-quote to a single double quote
+    '-': ' ',  # Maps hyphen to hyphen surrounded by spaces
     '—': ' ',  # Maps em dash to space
     '_': ' ',  # Maps underscore to space
     '%': ' ',  # Maps percent sign to space
-    '@': '',  # Removes at symbol
-    '#': '',  # Removes hashtag
-    '$': '',  # Removes dollar sign
-    '^': '',  # Removes caret
-    '&': '',  # Removes ampersand
-    '*': '',  # Removes asterisk
-    '{': '',  # Removes left curly brace
-    '}': '',  # Removes right curly brace
-    '?': ' ? ',  # Maps question mark to question mark surrounded by spaces
-    '!': ' ! ',  # Maps exclamation mark to exclamation mark surrounded by spaces
+    '@': ' ',  # Removes at symbol
+    '#': ' ',  # Removes hashtag
+    '$': ' ',  # Removes dollar sign
+    '^': ' ',  # Removes caret
+    '&': ' ',  # Removes ampersand
+    '*': ' ',  # Removes asterisk
+    '{': ' ',  # Removes left curly brace
+    '}': ' ',  # Removes right curly brace
+    '?': ' ',  # Maps question mark to question mark surrounded by spaces
+    '!': ' ',  # Maps exclamation mark to exclamation mark surrounded by spaces
     r'\\': '',  # Removes backslash
     '`': '',  # Removes backtick
     '|': '',  # Removes pipe symbol
@@ -239,8 +244,8 @@ sign_dict_en = {
     '⬅': ' ',  # Maps leftwards arrow to space
     '▫': ' ',  # Maps white small square to space
     '⃣': ' ',  # Maps keycap to space
-    '»': '"',  # Maps right double angle quote to standard double quote
-    '«': '"',  # Maps left double angle quote to standard double quote
+    '»': ' ',  # Maps right double angle quote to standard double quote
+    '«': ' ',  # Maps left double angle quote to standard double quote
     '<': ' ',  # Maps less-than sign to space
     '>': ' ',  # Maps greater-than sign to space
     '+': ' ',  # Maps plus sign to space
@@ -268,18 +273,19 @@ sign_dict_en = {
 
 # Similar to sign_dict_en, but for Persian text; maps Persian punctuation marks and symbols to standardized forms or spaces.
 sign_dict_fa = {
+    r"\u200c": " ",
     ',': '،',  # Maps comma to Persian comma
     '،': " ",  # Maps Persian comma to space
     ';': '؛',  # Maps semicolon to Persian semicolon
     '؛': ' ',  # Maps Persian semicolon to space
-    '?': '؟',  # Maps question mark to Persian question mark
+    '?': ' ',  # Maps question mark to Persian question mark
     '؟': ' ',  # Maps Persian question mark to space
     '!': ' ',  # Maps exclamation mark to space
     ':': ' ',  # Maps colon to space
-    '...': ' . ',  # Maps ellipsis to a single period surrounded by spaces
-    '..': ' . ',  # Maps double period to a single period surrounded by spaces
-    '. . .': ' . ',  # Maps spaced ellipsis to a single period surrounded by spaces
-    '…': ' . ',  # Maps ellipsis symbol to a single period surrounded by spaces
+    '...': ' ',  # Maps ellipsis to a single period surrounded by spaces
+    '..': ' ',  # Maps double period to a single period surrounded by spaces
+    '. . .': ' ',  # Maps spaced ellipsis to a single period surrounded by spaces
+    '…': ' ',  # Maps ellipsis symbol to a single period surrounded by spaces
     '“': ' ',  # Maps left double quotation mark to space
     '”': ' ',  # Maps right double quotation mark to space
     "'": ' ',  # Maps single quote to space
@@ -294,8 +300,8 @@ sign_dict_fa = {
     '@': '',  # Removes at symbol
     '#': '',  # Removes hashtag
     '$': '',  # Removes dollar sign
-    '%': ' ',  # Maps percent sign to space
-    '٪': ' ',  # Maps Persian percent sign to space
+    '%': '',  # Maps percent sign to space
+    '٪': '',  # Maps Persian percent sign to space
     '^': '',  # Removes caret
     '&': '',  # Removes ampersand
     '*': '',  # Removes asterisk
@@ -304,7 +310,6 @@ sign_dict_fa = {
     r'\\': '',  # Removes backslash
     '`': '',  # Removes backtick
     '|': '',  # Removes pipe symbol
-    '/': '',  # Removes forward slash
     '•': ' ',  # Maps bullet point to space
     '。': ' ',  # Maps Chinese period to space
     '¡': ' ',  # Maps inverted exclamation mark to space
@@ -402,7 +407,7 @@ sign_dict_fa = {
     'ŧ': 't',  # Replace Latin letter 't with stroke' to 't'
     'ٱ': 'ا',  # Replace Arabic letter 'alif with wasla' to standard 'ا'
     '£': '',  # Remove pound sign
-    'œ': 'oe',  # Replace Latin ligature 'oe' with 'oe'
+    'œ': 'oe',  # Replace Latin ligature 'oe' with 'oe',
 }
 
 # Maps a variety of special characters, symbols, accented characters, and some foreign characters to either their base form or removes them entirely.
