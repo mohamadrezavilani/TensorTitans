@@ -10,6 +10,7 @@ directory_path = "DataLoading/DataSource"
 
 # List of files in the directory to be processed
 files = [
+    "Sentence pairs in Persian-English - 2024-08-15.csv",
     "ELRC_2922-fa.csv",
     "Ubuntu-fa.csv",
     "tldr-pages-fa.csv",
@@ -18,15 +19,14 @@ files = [
     "infopankki-fa.csv",
     "QED-fa.csv",
     "NeuLab-TedTalks-fa.csv",
-    "Sentence pairs in Persian-English - 2024-08-15.csv",
     "TEP-fa.csv",
     "TED2020-fa.csv",
-    "MIZAN-fa.csv",
-    "Tanzil-fa.csv",
     "WikiMatrix-fa.csv",
     "wikimedia-fa.csv",
-    "LinguaTools-WikiTitles-fa.csv",
     "XLEnt-fa.csv",
+    "MIZAN-fa.csv",
+    "LinguaTools-WikiTitles-fa.csv",
+    "Tanzil-fa.csv",
     "OpenSubtitles-fa.csv",
 ]
 
