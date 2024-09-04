@@ -35,7 +35,19 @@ class EnglishTextPreprocessor:
     def remove_url_and_html(self, text):
         text = re.sub(r'http[s]?://\S+', '', text)  # Remove URLs
         text = re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)  # Remove URLs with newlines
+        text = re.sub(r'www\.\S+', '', text)  # Remove URLs starting with www
+        text = re.sub(r'\b(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:/[^\s]*)?\b', '',
+                      text)  # Remove URLs without protocol (e.g., example.com)
+
         text = re.sub('<.*?>+', '', text)  # Remove HTML tags
+
+        # Remove IP addresses (e.g., 192.168.0.1)
+        text = re.sub(r'\b\d{1,3}(?:\.\d{1,3}){3}\b(?:\:\d+)?', '',
+                      text)  # Handle IP addresses with optional port numbers
+
+        # Remove email addresses
+        text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '', text)  # Remove email addresses
+
         return text
 
     # Remove specific elements like mentions, hashtags, and newlines

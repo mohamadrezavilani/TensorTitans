@@ -10,24 +10,24 @@ directory_path = "DataLoading/DataSource"
 
 # List of files in the directory to be processed
 files = [
-    "Sentence pairs in Persian-English - 2024-08-15.csv",
-    "ELRC_2922-fa.csv",
-    "Ubuntu-fa.csv",
-    "tldr-pages-fa.csv",
-    "tico-19-fa.csv",
-    "GNOME-fa.csv",
-    "infopankki-fa.csv",
-    "QED-fa.csv",
-    "NeuLab-TedTalks-fa.csv",
-    "TEP-fa.csv",
-    "TED2020-fa.csv",
-    "WikiMatrix-fa.csv",
-    "wikimedia-fa.csv",
-    "XLEnt-fa.csv",
-    "MIZAN-fa.csv",
-    "LinguaTools-WikiTitles-fa.csv",
-    "Tanzil-fa.csv",
-    "OpenSubtitles-fa.csv",
+    # "Sentence pairs in Persian-English - 2024-08-15.csv",
+    # "ELRC_2922-fa.csv",
+    # "Ubuntu-fa.csv",
+    # "tldr-pages-fa.csv",
+    # "tico-19-fa.csv",
+    # "GNOME-fa.csv",
+    # "infopankki-fa.csv",
+    # "QED-fa.csv",
+    # "NeuLab-TedTalks-fa.csv",
+    # "TEP-fa.csv",
+    # "TED2020-fa.csv",
+    # "WikiMatrix-fa.csv",
+    # "wikimedia-fa.csv",
+    # "XLEnt-fa.csv",
+    # "MIZAN-fa.csv",
+    # "LinguaTools-WikiTitles-fa.csv",
+    # "Tanzil-fa.csv",
+    # "OpenSubtitles-fa.csv",
 ]
 
 # Instantiate text processors for Persian and English
@@ -74,6 +74,7 @@ def process_file(file_path):
 
         # Drop rows with any blank cells after processing
         df = df.dropna(how='any', ignore_index=True)
+        df = df.drop_duplicates(subset=['Cleaned_English', 'Cleaned_Farsi'], keep='last', ignore_index=True)
 
         # Remove rows where any cell contains only spaces or is an empty string
         df = df[~df.apply(lambda x: x.str.strip().eq('').any(), axis=1)]
@@ -85,6 +86,7 @@ def process_file(file_path):
         # Select relevant columns for the final DataFrame
         df_final = df_filtered[['Cleaned_English', f'Cleaned_{farsi_column}', 'Source']]
         df_final.columns = ['English', 'Persian', 'Source']  # Rename columns
+        df_final = df_final.drop_duplicates(subset=['English', 'Persian'], keep='last', ignore_index=True)
 
         # Save the cleaned DataFrame to a new CSV file
         cleaned_file_path = os.path.join(directory_path, f"cleaned_{os.path.basename(file_path)}")
