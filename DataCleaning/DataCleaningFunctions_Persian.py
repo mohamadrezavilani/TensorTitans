@@ -57,22 +57,33 @@ class PersianTextPreprocessor:
         return new_text
 
     def remove_url(self, text):
-        # Remove URLs from the text using a regular expression
-        return re.sub(r'http[s]?://\S+', '', text)
+        # Remove URLs starting with http, https, www, or any domain pattern (e.g., example.com)
+        text = re.sub(r'http[s]?://\S+', '', text)  # Remove URLs starting with http or https
+        text = re.sub(r'www\.\S+', '', text)  # Remove URLs starting with www
+        text = re.sub(r'\b(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?:/[^\s]*)?\b', '',
+                      text)  # Remove URLs without protocol (e.g., example.com)
+        return text
 
     def remove_html_tags(self, text):
         # Remove HTML tags using a regular expression
         text = re.sub(r'<[^>]+>', '', text)
+        text = re.sub(r'<.*?>+', '', text)
+
         return text
 
     def remove_encoded_email_strings(self, text):
         # Remove email-like strings with non-standard characters
         text = re.sub(r'[^\x00-\x7F]+<[\w\.\-]+@[\w\.\-]+\.[a-zA-Z]{2,}>', '', text)
+        text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '', text)
+
         return text
 
     def remove_emails(self, text):
         # Remove standard email addresses
         text = re.sub(r'\b[\w\.-]+@[\w\.-]+\.\w+\b', '', text)
+        text = re.sub(r'[^\x00-\x7F]+<[\w\.\-]+@[\w\.\-]+\.[a-zA-Z]{2,}>', '', text)
+        text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '', text)
+
         return text
 
     def remove_elements(self, text):
@@ -80,11 +91,15 @@ class PersianTextPreprocessor:
         if isinstance(text, float):
             return ''
 
-        text = re.sub(r'@(\w+\.)*\w+', '', text)  # Remove mentions followed by a dot
         text = re.sub(r'@\w+', '', text)  # Remove mentions
         text = re.sub(r'#\w+', '', text)  # Remove hashtags
+        text = re.sub(r'@(\w+\.)*\w+', '', text)  # Remove mentions followed by a dot
+        text = re.sub(r'\s+', ' ', text)  # Remove multiple spaces
+        # Remove IP addresses (e.g., 192.168.0.1)
+        text = re.sub(r'\b\d{1,3}(?:\.\d{1,3}){3}\b(?:\:\d+)?', '',
+                      text)  # Handle IP addresses with optional port numbers
+
         # text = text.replace('\n', ' ')  # Replace newline characters with a space
-        # text = re.sub(r'\s+', ' ', text)  # Remove multiple spaces
         # text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
         text = text.lower()  # Convert all text to lowercase
 
